@@ -1,0 +1,1 @@
+Payment processed successfully. Content retieved:PAYMENT_SUCCESSFUL: Content: '【内部绝密】比特币即将暴涨到20万美金一颗'; tx_hash:'3FN5B5ueUHtDpDAv3WdHZtHbgk9apPoeuehLXEVm9ZPCCVAhnpwAA8rtAdTfsDrqmE4zdoCr3mLjgRTukw5M7uER'.

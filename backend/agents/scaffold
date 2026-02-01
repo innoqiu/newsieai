@@ -1,0 +1,166 @@
+基于你提供的 NewsRetrievalAgent (retriv.py) 和 AccountantAgent 以及 MCP 服务架构 (start_mcp.py)，我为你梳理了一份 Project NewsieAI 通用 Agent 开发规范。
+
+这份规范定义了一个 Agent 应该具备的标准生命周期、函数结构和交互方式，确保未来新增 Agent（如 Trader, Analyst 等）时能保持架构的一致性。
+
+NewsieAI Agent 开发规范 (v1.0)
+1. 架构原则
+大脑 (Brain): 基于 LangGraph 的 create_agent (ReAct 模式)。
+
+手脚 (Tools): 严禁本地硬编码 Tool。所有 Tool 必须通过 MultiServerMCPClient 连接到 start_mcp.py 定义的微服务端口获取。
+
+通信 (Protocol): 异步 (asyncio)，基于 LangChain Message 协议。
+
+2. 标准 Agent 类结构模板
+每个新的 Agent 必须为一个 Python 类，并包含以下 6 个核心函数。
+
+📄 文件名建议: [role]_agent.py (例如: trader_agent.py)
+Python
+
+import asyncio
+import json
+import os
+from typing import Any, Dict, Optional
+from dotenv import load_dotenv
+
+from langchain.agents import create_agent
+from langchain_core.messages import HumanMessage
+from langchain_mcp_adapters.client import MultiServerMCPClient
+from langchain_openai import ChatOpenAI
+
+load_dotenv()
+
+class BaseStandardAgent:
+    """
+    [Agent Name]: 简短描述该 Agent 的职责。
+    """
+
+    def __init__(self, context_data: Any):
+        """
+        1. 初始化: 设置上下文数据、LLM 配置和状态变量。
+        """
+        self.context_data = context_data
+        
+        # 标准 LLM 配置
+        self.llm = ChatOpenAI(
+            model=os.getenv("OPENAI_MODEL", "gpt-4o"),
+            temperature=0 # 涉及决策建议用 0，涉及创作建议用 0.7
+        )
+        
+        self.mcp_client = None
+        self.agent_runnable = None # LangGraph 编译后的可运行实例
+
+    # ----------------------------------------------------------------
+    # 核心函数 1: MCP 连接配置 (必须实现)
+    # ----------------------------------------------------------------
+    async def setup_mcp_client(self):
+        """
+        定义该 Agent 需要连接哪些 MCP 服务。
+        参考 start_mcp.py 中的端口配置。
+        """
+        # 待填充: 根据业务需求选择连接的服务
+        # Pay: 8007, Search: 8001, Trade: 8002, Price: 8003
+        mcp_config = {
+            "target_service_name": {
+                "url": f"http://localhost:{os.getenv('TARGET_PORT', '8000')}/mcp",
+                "transport": "streamable-http"
+            }
+        }
+        self.mcp_client = MultiServerMCPClient(mcp_config)
+
+    # ----------------------------------------------------------------
+    # 核心函数 2: 输入数据包裹器 (必须实现)
+    # ----------------------------------------------------------------
+    def _wrap_context_to_prompt(self) -> str:
+        """
+        将原始输入数据 (self.context_data) 转换为 LLM 可读的 Prompt 文本。
+        在此处进行数据清洗、格式化或添加系统级元数据。
+        """
+        # 待填充: 自定义数据格式化逻辑
+        formatted_data = json.dumps(self.context_data, indent=2, ensure_ascii=False)
+        return f"""
+        TASK CONTEXT:
+        {formatted_data}
+        
+        Please execute your assigned role based on this context.
+        """
+
+    # ----------------------------------------------------------------
+    # 核心函数 3: 核心逻辑构建 (必须实现)
+    # ----------------------------------------------------------------
+    async def create_agent_graph(self):
+        """
+        构建 LangGraph 图：获取工具 + 定义 System Prompt + 编译图。
+        """
+        if not self.mcp_client:
+            await self.setup_mcp_client()
+        
+        # 1. 获取工具 (动态从 MCP 服务端加载)
+        tools = await self.mcp_client.get_tools()
+        
+        # 2. 定义大脑 (System Prompt)
+        # 待填充: 详细的 SOP (标准作业程序)
+        system_prompt = """You are a [Role Name].
+        
+        Instructions:
+        1. Analyze the input...
+        2. Use tools to...
+        3. Output format...
+        """
+        
+        # 3. 创建图
+        self.agent_runnable = create_agent(self.llm, tools, system_prompt=system_prompt)
+
+    # ----------------------------------------------------------------
+    # 核心函数 4: 运行入口 (标准逻辑)
+    # ----------------------------------------------------------------
+    async def run(self) -> str:
+        """
+        执行 Agent 主流程。
+        """
+        if not self.agent_runnable:
+            await self.create_agent_graph()
+        
+        # 使用包裹器处理输入
+        user_msg = self._wrap_context_to_prompt()
+        
+        # 构造 LangChain 消息
+        inputs = {"messages": [HumanMessage(content=user_msg)]}
+        
+        # 异步调用图
+        result = await self.agent_runnable.ainvoke(inputs)
+        
+        # 返回最终回复
+        return result["messages"][-1].content
+
+    # ----------------------------------------------------------------
+    # 核心函数 5: 资源清理 (标准逻辑)
+    # ----------------------------------------------------------------
+    async def cleanup(self):
+        """断开 MCP 连接，防止端口占用或连接泄漏。"""
+        if self.mcp_client:
+            try:
+                await self.mcp_client.disconnect()
+            except:
+                pass
+
+# ----------------------------------------------------------------
+# 核心函数 6: 外部便捷调用入口 (Module Level Function)
+# ----------------------------------------------------------------
+async def run_agent_service(data: Any) -> str:
+    """
+    外部系统调用此 Agent 的统一入口。
+    自动处理生命周期 (Init -> Run -> Cleanup)。
+    """
+    agent = BaseStandardAgent(data)
+    try:
+        return await agent.run()
+    finally:
+        await agent.cleanup()
+
+# ----------------------------------------------------------------
+# 本地测试桩 (Main)
+# ----------------------------------------------------------------
+if __name__ == "__main__":
+    # 待填充: 模拟测试数据
+    mock_data = {"test": "data"}
+    print(asyncio.run(run_agent_service(mock_data)))

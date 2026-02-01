@@ -1,0 +1,28 @@
+
+
++-----------------------------------------------------------------------------+
+|                                                                             |
+|                        ¨{\u2580\u2580 ¨{\u2580¨€ ¨€\u2580\u2580 \u2580¨€\u2580 ¨€\u2580¨{\u2580¨€ ¨€\u2580\u2580 ¨€\u2580¨€                        |
+|                        ¨€\u2580  ¨€\u2580¨€ ¨{¨{¨€  ¨€  ¨€ \u2580 ¨€ ¨€¨{¨{ ¨€\u2580\u2580                        |
+|                                                                             |
+|                               FastMCP 2.14.1                                |
+|                                                                             |
+|                                                                             |
+|                  \U0001f5a5  Server name: FastMCP-2fdf                               |
+|                                                                             |
+|                  \U0001f4e6 Transport:   HTTP                                       |
+|                  \U0001f517 Server URL:  http://127.0.0.1:8001/mcp                  |
+|                                                                             |
+|                  \U0001f4da Docs:        https://gofastmcp.com                      |
+|                  \U0001f680 Hosting:     https://fastmcp.cloud                      |
+|                                                                             |
++-----------------------------------------------------------------------------+
+
+
+[01/13/26 15:59:18] INFO     Starting MCP server 'FastMCP-2fdf'  server.py:2618
+                             with transport 'streamable-http' on               
+                             http://127.0.0.1:8001/mcp                         
+INFO:     Started server process [44228]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
