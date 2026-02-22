@@ -13,6 +13,9 @@ This project is built around a **dual-agent architecture**:
 2. **Retrieval Agent**  
    A smart retrieval pipeline that searches for new content (especially X/Twitter and topic-based signals), structures outputs, and supports profile-aware filtering in smart mode.
 
+3. **Accoutant Agent (Not Secure Now)**  
+   A SmartPayment-compatible agent that evaluate the value of the content and automatically pays via Solona network.
+
 ## Key Highlights
 
 - **Dual-agent system for personalization + retrieval**  
