@@ -1,3 +1,5 @@
+##MY NEW PROJECT FOXMO (HELPING WITH FOMO BY IMPROVING, INTEGRATING, AND MANAGING INFORMATION SOURCES) IS ONGOING, FOLLOW THE CHANNEL FOR MAJOR UPDATE.
+
 # NewsieAI
 
 NewsieAI is an AI-powered workflow system for personalized news discovery, profile-aware retrieval, and payment-gated content access.  
