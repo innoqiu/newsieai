@@ -31,6 +31,8 @@ This project is built around a **dual-agent architecture**:
 
 - **Thread-based automation and scheduling**  
   Workflows can be saved as threads and executed in interval/daily schedules with timezone support.
+  <img width="2449" height="1330" alt="image" src="https://github.com/user-attachments/assets/19041b55-5839-45e2-abb7-c2f1c9d6cfdd" />
+
 
 - **Structured output and persistence**  
   Retrieved items are normalized into structured records and stored for later inbox/history use.
